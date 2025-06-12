@@ -901,7 +901,7 @@ run_sffe () {
 ## set file's datetime from file's name
 run_sffn () {
 	echo "${input}" | egrep -q "[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}_[[:digit:]]{6}" || \
-		{ "${kdialog_bin}" --title "${!msg_title}" --icon configure --error "${msg_common_name_error}" && qdbus $dbus_ref close && exit 2; }
+		{ "${kdialog_bin}" --title "${!msg_title}" --icon configure --error "${msg_common_name_error}" && qdbus6 $dbus_ref close && exit 2; }
 	DATE=$(echo "${input}" | sed "s/.*\([[:digit:]]\{4\}\)-\([[:digit:]]\{2\}\)-\([[:digit:]]\{2\}\)_\([[:digit:]]\{2\}\)\([[:digit:]]\{2\}\)\([[:digit:]]\{2\}\).*/\1\2\3\4\5.\6/")
 
 	msg=$(touch -t $DATE "${input}" 2>&1)
@@ -919,7 +919,7 @@ run_seff () {
 ## set Exif datetime from file's name
 run_sefn () {
 	echo "${input}" | egrep -q "[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}_[[:digit:]]{6}" || \
-		{ "${kdialog_bin}" --title "${!msg_title}" --icon configure --error "${msg_common_name_error}" && qdbus $dbus_ref close && exit 2; }
+		{ "${kdialog_bin}" --title "${!msg_title}" --icon configure --error "${msg_common_name_error}" && qdbus6 $dbus_ref close && exit 2; }
 	DATE=$(echo "${input}" | sed "s/.*\([[:digit:]]\{4\}\)-\([[:digit:]]\{2\}\)-\([[:digit:]]\{2\}\)_\([[:digit:]]\{2\}\)\([[:digit:]]\{2\}\)\([[:digit:]]\{2\}\).*/\1:\2:\3-\4:\5:\6/")
 
 	msg=$("${jhead_bin}" -q -ts$DATE "${input}" 2>&1)
@@ -996,13 +996,13 @@ manage_input_separately () {
 
 	quantity=$#
 	dbus_ref=$(kdialog --icon configure --title "${!msg_title}" --progressbar "${msg_common_start}" $quantity)
-	qdbus $dbus_ref showCancelButton true
+	qdbus6 $dbus_ref showCancelButton true
 	processed=0
 
 	for input in "$@"; do
 		## Check if cancel button has been pushed
-		[ "$(qdbus $dbus_ref wasCancelled)" = "true" ] && \
-			qdbus $dbus_ref close && "${kdialog_bin}" --title "${!msg_title}" --passivepopup "${msg_common_abort}" 5 && exit 2;
+		[ "$(qdbus6 $dbus_ref wasCancelled)" = "true" ] && \
+			qdbus6 $dbus_ref close && "${kdialog_bin}" --title "${!msg_title}" --passivepopup "${msg_common_abort}" 5 && exit 2;
 
 		dir=$(dirname -- "${input}")
 		name="${input##*/}"
@@ -1013,17 +1013,17 @@ manage_input_separately () {
 		load_language
 
 		[ ! -f "${input}" ] && "${kdialog_bin}" --title --icon configure "${!msg_title}" --error "${msg_common_file_not_found}" && break
-		qdbus $dbus_ref setLabelText "${msg_common_progress_text}"
+		qdbus6 $dbus_ref setLabelText "${msg_common_progress_text}"
 
 		msg_finish_title=msg_${action}_finish_title
 		run_${action} && \
 			"${kdialog_bin}" --title "${!msg_finish_title}" --passivepopup "${msg_common_finish_ok}" 5 || \
-			{ qdbus $dbus_ref close; "${kdialog_bin}" --icon configure --title "${!msg_finish_title}" --detailederror "${msg_common_finish_error}" "${msg}"; exit 2; }
+			{ qdbus6 $dbus_ref close; "${kdialog_bin}" --icon configure --title "${!msg_finish_title}" --detailederror "${msg_common_finish_error}" "${msg}"; exit 2; }
 
-		qdbus $dbus_ref org.freedesktop.DBus.Properties.Set org.kde.kdialog.ProgressDialog value $processed
+		qdbus6 $dbus_ref org.freedesktop.DBus.Properties.Set org.kde.kdialog.ProgressDialog value $processed
 	done
 
-	qdbus $dbus_ref close
+	qdbus6 $dbus_ref close
 }
 
 manage_input_at_once () {
@@ -1036,7 +1036,7 @@ manage_input_at_once () {
 	msg_finish_title=msg_${action}_finish_title
 	run_${action} "${@}" && \
 		"${kdialog_bin}" --title "${!msg_finish_title}" --passivepopup "${msg_common_finish_ok}" 5 || \
-		{ qdbus $dbus_ref close; "${kdialog_bin}" --icon configure --title "${!msg_finish_title}" --detailederror "${msg_common_finish_error}" "${msg}"; exit 2; }
+		{ qdbus6 $dbus_ref close; "${kdialog_bin}" --icon configure --title "${!msg_finish_title}" --detailederror "${msg_common_finish_error}" "${msg}"; exit 2; }
 
 }
 
